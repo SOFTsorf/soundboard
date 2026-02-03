@@ -3,156 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega Meme Board</title>
+    <title>Meme Lord Soundboard</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0f0f0f;
-            color: white;
-            text-align: center;
-            padding: 20px;
+        :root {
+            --bg: #0b0e14;
+            --card: #1c2128;
+            --accent: #00ff88;
+            --error: #ff4444;
         }
 
-        .search-container {
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
             margin-bottom: 30px;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
         }
 
         #searchBar {
-            padding: 15px;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 25px;
-            border: none;
-            font-size: 1.1rem;
-            box-shadow: 0 0 15px #ff0055;
+            padding: 15px 25px;
+            width: 300px;
+            border-radius: 30px;
+            border: 2px solid #333;
+            background: var(--card);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        #searchBar:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 15px;
+            width: 100%;
             max-width: 1200px;
-            margin: 0 auto;
         }
 
-        .card {
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 12px;
-            padding: 15px;
+        .sound-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
             cursor: pointer;
             transition: 0.2s;
+            border: 1px solid #30363d;
+            position: relative;
         }
 
-        .card:hover {
-            transform: scale(1.05);
-            border-color: #ff0055;
-            background: #252525;
+        .sound-card:hover {
+            transform: translateY(-5px);
+            background: #2d333b;
+            border-color: var(--accent);
         }
 
-        .card span {
-            display: block;
-            font-size: 0.8rem;
-            margin-top: 8px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        .sound-card.error {
+            border-color: var(--error);
+            opacity: 0.6;
         }
 
-        .emoji { font-size: 2rem; }
+        .emoji { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+        .name { font-size: 0.85rem; font-weight: bold; color: #adbac7; }
 
         .controls {
-            margin-top: 30px;
-            padding: 20px;
+            position: fixed;
+            bottom: 20px;
+            display: flex;
+            gap: 10px;
         }
 
-        .stop-btn {
-            background: #ff0055;
-            color: white;
+        button.control-btn {
+            padding: 12px 25px;
+            border-radius: 20px;
             border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-weight: bold;
             cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
         }
+
+        .stop { background: var(--error); color: white; }
+        .count { background: #333; color: white; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
 
-    <h1>🚀 Mega Meme Board</h1>
-    
-    <div class="search-container">
-        <input type="text" id="searchBar" placeholder="Meme suchen..." onkeyup="filterSounds()">
+    <div class="header">
+        <h1>🔊 MEME BOARD PRO</h1>
+        <input type="text" id="searchBar" placeholder="Meme suchen..." onkeyup="filter()">
     </div>
 
-    <div class="grid" id="soundGrid">
-        </div>
+    <div class="grid" id="board"></div>
 
     <div class="controls">
-        <button class="stop-btn" onclick="stopAll()">🛑 ALLE STOPPEN</button>
+        <button class="control-btn count" id="counter">0 Sounds geladen</button>
+        <button class="control-btn stop" onclick="stopAll()">🛑 STOP ALL</button>
     </div>
 
     <script>
-        // HIER kannst du unendlich viele Sounds hinzufügen!
-        // Einfach kopieren und Name/URL/Emoji anpassen.
-        const soundList = [
-            { name: "Airhorn", url: "https://www.myinstants.com/media/sounds/mlg-airhorn.mp3", emoji: "📢" },
-            { name: "Bruh", url: "https://www.myinstants.com/media/sounds/bruh_l_P6M68.mp3", emoji: "💀" },
-            { name: "FBI", url: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3", emoji: "👮" },
-            { name: "Emotional Damage", url: "https://www.myinstants.com/media/sounds/emotional-damage.mp3", emoji: "😭" },
-            { name: "Discord", url: "https://www.myinstants.com/media/sounds/discord-notification.mp3", emoji: "💬" },
-            { name: "Wilhelm", url: "https://www.myinstants.com/media/sounds/movie_1.mp3", emoji: "🎭" },
-            { name: "Success", url: "https://www.myinstants.com/media/sounds/tada.mp3", emoji: "🎉" },
-            { name: "Fail", url: "https://www.myinstants.com/media/sounds/fail-trombone-01.mp3", emoji: "🎺" },
-            { name: "Nooo", url: "https://www.myinstants.com/media/sounds/nooo.mp3", emoji: "😱" },
-            { name: "Minecraft Hit", url: "https://www.myinstants.com/media/sounds/classic_hurt.mp3", emoji: "⛏️" },
-            { name: "Gnome", url: "https://www.myinstants.com/media/sounds/youve-been-gnomed-full-sound.mp3", emoji: "🎅" },
-            { name: "Aww Hell No", url: "https://www.myinstants.com/media/sounds/aw-hell-no.mp3", emoji: "🙅" }
+        // DIE SOUND-LISTE
+        // Füge hier so viele hinzu wie du willst! 
+        // WICHTIG: Die URL muss direkt auf .mp3 enden.
+        const sounds = [
+            { n: "Airhorn", e: "📢", u: "https://www.myinstants.com/media/sounds/mlg-airhorn.mp3" },
+            { n: "Bruh", e: "💀", u: "https://www.myinstants.com/media/sounds/bruh_l_P6M68.mp3" },
+            { n: "FBI Open Up", e: "👮", u: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3" },
+            { n: "Emotional Damage", e: "😭", u: "https://www.myinstants.com/media/sounds/emotional-damage.mp3" },
+            { n: "Discord", e: "💬", u: "https://www.myinstants.com/media/sounds/discord-notification.mp3" },
+            { n: "Success", e: "🎉", u: "https://www.myinstants.com/media/sounds/tada.mp3" },
+            { n: "Hell No", e: "🙅", u: "https://www.myinstants.com/media/sounds/aw-hell-no.mp3" },
+            { n: "Why u bully me", e: "🥺", u: "https://www.myinstants.com/media/sounds/why-you-bully-me.mp3" },
+            { n: "Oh No", e: "🙈", u: "https://www.myinstants.com/media/sounds/oh-no-tiktok.mp3" },
+            { n: "Run", e: "🏃", u: "https://www.myinstants.com/media/sounds/run-meme-sound-effect.mp3" },
+            { n: "Coffin Dance", e: "⚰️", u: "https://www.myinstants.com/media/sounds/astronomia-coffin-dance.mp3" },
+            { n: "Directed by", e: "🎬", u: "https://www.myinstants.com/media/sounds/directed-by-robert-b-weide.mp3" },
+            { n: "Windows XP", e: "💻", u: "https://www.myinstants.com/media/sounds/windows-xp-startup.mp3" },
+            { n: "Game Over", e: "🎮", u: "https://www.myinstants.com/media/sounds/gta-v-wasted-death-sound.mp3" },
+            { n: "Bonk", e: "🔨", u: "https://www.myinstants.com/media/sounds/bonk-sound-effect.mp3" }
         ];
 
-        let playingSounds = [];
+        let activeAudio = [];
 
-        // Diese Funktion baut die Buttons automatisch
-        function createButtons() {
-            const grid = document.getElementById('soundGrid');
-            grid.innerHTML = ""; // Leeren
+        function buildBoard() {
+            const board = document.getElementById('board');
+            document.getElementById('counter').innerText = `${sounds.length} Sounds verfügbar`;
             
-            soundList.forEach(sound => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.setAttribute('data-name', sound.name.toLowerCase());
-                div.onclick = () => play(sound.url);
-                div.innerHTML = `<div class="emoji">${sound.emoji}</div><span>${sound.name}</span>`;
-                grid.appendChild(div);
+            sounds.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'sound-card';
+                card.innerHTML = `<span class="emoji">${s.e}</span><span class="name">${s.n}</span>`;
+                
+                card.onclick = () => {
+                    const a = new Audio(s.u);
+                    a.play().catch(() => {
+                        card.classList.add('error');
+                        alert("Sound konnte nicht geladen werden (Hotlinking-Schutz)");
+                    });
+                    activeAudio.push(a);
+                };
+                
+                board.appendChild(card);
             });
-        }
-
-        function play(url) {
-            const audio = new Audio(url);
-            playingSounds.push(audio);
-            audio.play();
         }
 
         function stopAll() {
-            playingSounds.forEach(s => { s.pause(); s.currentTime = 0; });
-            playingSounds = [];
+            activeAudio.forEach(a => { a.pause(); a.currentTime = 0; });
+            activeAudio = [];
         }
 
-        function filterSounds() {
-            const term = document.getElementById('searchBar').value.toLowerCase();
-            const cards = document.querySelectorAll('.card');
-            
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name');
-                card.style.display = name.includes(term) ? "block" : "none";
+        function filter() {
+            const q = document.getElementById('searchBar').value.toLowerCase();
+            document.querySelectorAll('.sound-card').forEach(c => {
+                const name = c.querySelector('.name').innerText.toLowerCase();
+                c.style.display = name.includes(q) ? 'block' : 'none';
             });
         }
 
-        // Beim Start Buttons generieren
-        createButtons();
+        buildBoard();
     </script>
 </body>
 </html>
