@@ -3,175 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meme Lord Soundboard</title>
+    <title>Ultra Meme Board 1000+</title>
     <style>
         :root {
-            --bg: #0b0e14;
-            --card: #1c2128;
-            --accent: #00ff88;
-            --error: #ff4444;
+            --primary: #00d4ff;
+            --bg: #050505;
+            --surface: #111;
+            --text: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
-            color: white;
-            padding: 20px;
+            color: var(--text);
             margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        /* Fixierter Header für die Suche */
+        .search-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
 
-        #searchBar {
+        h1 { margin: 0 0 15px 0; font-size: 2rem; color: var(--primary); }
+
+        #search {
+            width: 90%;
+            max-width: 600px;
             padding: 15px 25px;
-            width: 300px;
-            border-radius: 30px;
+            border-radius: 50px;
             border: 2px solid #333;
-            background: var(--card);
+            background: var(--surface);
             color: white;
-            font-size: 1rem;
+            font-size: 1.2rem;
             outline: none;
             transition: 0.3s;
         }
 
-        #searchBar:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
+        #search:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
+        /* Performance-optimiertes Grid */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
+            margin-top: 20px;
         }
 
         .sound-card {
-            background: var(--card);
-            border-radius: 15px;
-            padding: 20px 10px;
+            background: var(--surface);
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 15px 5px;
             text-align: center;
             cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #30363d;
-            position: relative;
+            transition: transform 0.1s, background 0.2s;
+            /* Verhindert Textmarkierung beim schnellen Klicken */
+            user-select: none;
         }
 
-        .sound-card:hover {
-            transform: translateY(-5px);
-            background: #2d333b;
-            border-color: var(--accent);
-        }
+        .sound-card:hover { background: #222; transform: translateY(-3px); border-color: var(--primary); }
+        .sound-card:active { transform: scale(0.95); }
 
-        .sound-card.error {
-            border-color: var(--error);
-            opacity: 0.6;
-        }
+        .emoji { font-size: 1.8rem; display: block; margin-bottom: 5px; }
+        .name { font-size: 0.75rem; color: #bbb; display: block; line-height: 1.2; height: 2.4em; overflow: hidden; }
 
-        .emoji { font-size: 2.5rem; display: block; margin-bottom: 10px; }
-        .name { font-size: 0.85rem; font-weight: bold; color: #adbac7; }
+        /* Status-Leiste */
+        .stats { margin-top: 10px; font-size: 0.9rem; color: var(--primary); }
 
-        .controls {
+        .stop-all {
             position: fixed;
             bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        button.control-btn {
-            padding: 12px 25px;
-            border-radius: 20px;
+            right: 20px;
+            background: #ff0055;
+            color: white;
             border: none;
-            cursor: pointer;
+            padding: 15px 25px;
+            border-radius: 50px;
             font-weight: bold;
-            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 1001;
         }
-
-        .stop { background: var(--error); color: white; }
-        .count { background: #333; color: white; border: 1px solid var(--accent); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🔊 MEME BOARD PRO</h1>
-        <input type="text" id="searchBar" placeholder="Meme suchen..." onkeyup="filter()">
+    <div class="search-header">
+        <h1>MEME ARCHIVE 1000</h1>
+        <input type="text" id="search" placeholder="Suche unter 1000+ Sounds..." oninput="doSearch()">
+        <div class="stats" id="stats">Lädiere Sounds...</div>
     </div>
 
-    <div class="grid" id="board"></div>
+    <div class="grid" id="soundGrid"></div>
 
-    <div class="controls">
-        <button class="control-btn count" id="counter">0 Sounds geladen</button>
-        <button class="control-btn stop" onclick="stopAll()">🛑 STOP ALL</button>
-    </div>
+    <button class="stop-all" onclick="stopAll()">🛑 STOP</button>
 
     <script>
-        // DIE SOUND-LISTE
-        // Füge hier so viele hinzu wie du willst! 
-        // WICHTIG: Die URL muss direkt auf .mp3 enden.
-        const sounds = [
-            { n: "Airhorn", e: "📢", u: "https://www.myinstants.com/media/sounds/mlg-airhorn.mp3" },
-            { n: "Bruh", e: "💀", u: "https://www.myinstants.com/media/sounds/bruh_l_P6M68.mp3" },
-            { n: "FBI Open Up", e: "👮", u: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3" },
-            { n: "Emotional Damage", e: "😭", u: "https://www.myinstants.com/media/sounds/emotional-damage.mp3" },
-            { n: "Discord", e: "💬", u: "https://www.myinstants.com/media/sounds/discord-notification.mp3" },
-            { n: "Success", e: "🎉", u: "https://www.myinstants.com/media/sounds/tada.mp3" },
-            { n: "Hell No", e: "🙅", u: "https://www.myinstants.com/media/sounds/aw-hell-no.mp3" },
-            { n: "Why u bully me", e: "🥺", u: "https://www.myinstants.com/media/sounds/why-you-bully-me.mp3" },
-            { n: "Oh No", e: "🙈", u: "https://www.myinstants.com/media/sounds/oh-no-tiktok.mp3" },
-            { n: "Run", e: "🏃", u: "https://www.myinstants.com/media/sounds/run-meme-sound-effect.mp3" },
-            { n: "Coffin Dance", e: "⚰️", u: "https://www.myinstants.com/media/sounds/astronomia-coffin-dance.mp3" },
-            { n: "Directed by", e: "🎬", u: "https://www.myinstants.com/media/sounds/directed-by-robert-b-weide.mp3" },
-            { n: "Windows XP", e: "💻", u: "https://www.myinstants.com/media/sounds/windows-xp-startup.mp3" },
-            { n: "Game Over", e: "🎮", u: "https://www.myinstants.com/media/sounds/gta-v-wasted-death-sound.mp3" },
-            { n: "Bonk", e: "🔨", u: "https://www.myinstants.com/media/sounds/bonk-sound-effect.mp3" }
+        // Wir simulieren hier eine riesige Datenbank.
+        // In der Realität würdest du diese Liste aus einer .json Datei laden.
+        const baseSounds = [
+            { n: "Airhorn", u: "https://www.myinstants.com/media/sounds/mlg-airhorn.mp3", e: "📢" },
+            { n: "Bruh", u: "https://www.myinstants.com/media/sounds/bruh_l_P6M68.mp3", e: "💀" },
+            { n: "FBI", u: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3", e: "👮" },
+            { n: "Emotional Damage", u: "https://www.myinstants.com/media/sounds/emotional-damage.mp3", e: "😭" },
+            { n: "Windows XP", u: "https://www.myinstants.com/media/sounds/windows-xp-startup.mp3", e: "💻" },
+            { n: "Bonk", u: "https://www.myinstants.com/media/sounds/bonk-sound-effect.mp3", e: "🔨" },
+            { n: "Directed By", u: "https://www.myinstants.com/media/sounds/directed-by-robert-b-weide.mp3", e: "🎬" },
+            { n: "Coffin Dance", u: "https://www.myinstants.com/media/sounds/astronomia-coffin-dance.mp3", e: "⚰️" }
+            // Stell dir vor, hier folgen weitere 992 Einträge...
         ];
 
-        let activeAudio = [];
+        // Wir generieren zum Testen "künstlich" 1000 Einträge aus den Basis-Sounds
+        const megaList = [];
+        for(let i = 1; i <= 1000; i++) {
+            let randomBase = baseSounds[Math.floor(Math.random() * baseSounds.length)];
+            megaList.push({
+                n: randomBase.n + " #" + i,
+                u: randomBase.u,
+                e: randomBase.e
+            });
+        }
 
-        function buildBoard() {
-            const board = document.getElementById('board');
-            document.getElementById('counter').innerText = `${sounds.length} Sounds verfügbar`;
+        let currentAudios = [];
+
+        function renderBoard(filter = "") {
+            const grid = document.getElementById('soundGrid');
+            grid.innerHTML = "";
             
-            sounds.forEach(s => {
+            const filtered = megaList.filter(s => s.n.toLowerCase().includes(filter.toLowerCase()));
+            
+            document.getElementById('stats').innerText = `${filtered.length} Sounds angezeigt`;
+
+            // DocumentFragment für bessere Performance beim Rendern von 1000 Elementen
+            const fragment = document.createDocumentFragment();
+
+            filtered.forEach(s => {
                 const card = document.createElement('div');
                 card.className = 'sound-card';
                 card.innerHTML = `<span class="emoji">${s.e}</span><span class="name">${s.n}</span>`;
-                
-                card.onclick = () => {
-                    const a = new Audio(s.u);
-                    a.play().catch(() => {
-                        card.classList.add('error');
-                        alert("Sound konnte nicht geladen werden (Hotlinking-Schutz)");
-                    });
-                    activeAudio.push(a);
-                };
-                
-                board.appendChild(card);
+                card.onclick = () => play(s.u);
+                fragment.appendChild(card);
             });
+
+            grid.appendChild(fragment);
+        }
+
+        function play(url) {
+            const a = new Audio(url);
+            a.play().catch(err => console.log("Sound konnte nicht geladen werden."));
+            currentAudios.push(a);
+            // Speicher aufräumen, wenn Sound fertig
+            a.onended = () => { currentAudios = currentAudios.filter(aud => aud !== a); };
         }
 
         function stopAll() {
-            activeAudio.forEach(a => { a.pause(); a.currentTime = 0; });
-            activeAudio = [];
+            currentAudios.forEach(a => { a.pause(); a.currentTime = 0; });
+            currentAudios = [];
         }
 
-        function filter() {
-            const q = document.getElementById('searchBar').value.toLowerCase();
-            document.querySelectorAll('.sound-card').forEach(c => {
-                const name = c.querySelector('.name').innerText.toLowerCase();
-                c.style.display = name.includes(q) ? 'block' : 'none';
-            });
+        // Suche mit kleiner Verzögerung (Debounce) für mehr Speed
+        let timeout = null;
+        function doSearch() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                renderBoard(document.getElementById('search').value);
+            }, 150);
         }
 
-        buildBoard();
+        // Initiales Laden
+        renderBoard();
     </script>
 </body>
 </html>
