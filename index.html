@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Meme Board</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        #searchBar {
+            padding: 15px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 25px;
+            border: none;
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px #ff0055;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: #ff0055;
+            background: #252525;
+        }
+
+        .card span {
+            display: block;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .emoji { font-size: 2rem; }
+
+        .controls {
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .stop-btn {
+            background: #ff0055;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Mega Meme Board</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="Meme suchen..." onkeyup="filterSounds()">
+    </div>
+
+    <div class="grid" id="soundGrid">
+        </div>
+
+    <div class="controls">
+        <button class="stop-btn" onclick="stopAll()">🛑 ALLE STOPPEN</button>
+    </div>
+
+    <script>
+        // HIER kannst du unendlich viele Sounds hinzufügen!
+        // Einfach kopieren und Name/URL/Emoji anpassen.
+        const soundList = [
+            { name: "Airhorn", url: "https://www.myinstants.com/media/sounds/mlg-airhorn.mp3", emoji: "📢" },
+            { name: "Bruh", url: "https://www.myinstants.com/media/sounds/bruh_l_P6M68.mp3", emoji: "💀" },
+            { name: "FBI", url: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3", emoji: "👮" },
+            { name: "Emotional Damage", url: "https://www.myinstants.com/media/sounds/emotional-damage.mp3", emoji: "😭" },
+            { name: "Discord", url: "https://www.myinstants.com/media/sounds/discord-notification.mp3", emoji: "💬" },
+            { name: "Wilhelm", url: "https://www.myinstants.com/media/sounds/movie_1.mp3", emoji: "🎭" },
+            { name: "Success", url: "https://www.myinstants.com/media/sounds/tada.mp3", emoji: "🎉" },
+            { name: "Fail", url: "https://www.myinstants.com/media/sounds/fail-trombone-01.mp3", emoji: "🎺" },
+            { name: "Nooo", url: "https://www.myinstants.com/media/sounds/nooo.mp3", emoji: "😱" },
+            { name: "Minecraft Hit", url: "https://www.myinstants.com/media/sounds/classic_hurt.mp3", emoji: "⛏️" },
+            { name: "Gnome", url: "https://www.myinstants.com/media/sounds/youve-been-gnomed-full-sound.mp3", emoji: "🎅" },
+            { name: "Aww Hell No", url: "https://www.myinstants.com/media/sounds/aw-hell-no.mp3", emoji: "🙅" }
+        ];
+
+        let playingSounds = [];
+
+        // Diese Funktion baut die Buttons automatisch
+        function createButtons() {
+            const grid = document.getElementById('soundGrid');
+            grid.innerHTML = ""; // Leeren
+            
+            soundList.forEach(sound => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.setAttribute('data-name', sound.name.toLowerCase());
+                div.onclick = () => play(sound.url);
+                div.innerHTML = `<div class="emoji">${sound.emoji}</div><span>${sound.name}</span>`;
+                grid.appendChild(div);
+            });
+        }
+
+        function play(url) {
+            const audio = new Audio(url);
+            playingSounds.push(audio);
+            audio.play();
+        }
+
+        function stopAll() {
+            playingSounds.forEach(s => { s.pause(); s.currentTime = 0; });
+            playingSounds = [];
+        }
+
+        function filterSounds() {
+            const term = document.getElementById('searchBar').value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.style.display = name.includes(term) ? "block" : "none";
+            });
+        }
+
+        // Beim Start Buttons generieren
+        createButtons();
+    </script>
+</body>
+</html>
